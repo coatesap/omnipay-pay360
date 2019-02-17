@@ -2,11 +2,11 @@
 
 use DigiTickets\Pay360\Messages\PurchaseRequest;
 
-class PurchaseRequestTest extends PHPUnit_Framework_TestCase
+class PurchaseRequestTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetData()
     {
-        $client = Mockery::mock(\Guzzle\Http\ClientInterface::class);
+        $client = Mockery::mock(\Omnipay\Common\Http\ClientInterface::class);
         $request = Mockery::mock(\Symfony\Component\HttpFoundation\Request::class);
 
         $request = new PurchaseRequest($client, $request);

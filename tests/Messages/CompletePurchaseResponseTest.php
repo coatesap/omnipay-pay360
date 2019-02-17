@@ -3,7 +3,7 @@
 use DigiTickets\Pay360\Messages\CompletePurchaseResponse;
 use DigiTickets\Pay360\Messages\CompletePurchaseRequest;
 
-class CompletePurchaseResponseTest extends PHPUnit_Framework_TestCase
+class CompletePurchaseResponseTest extends \PHPUnit\Framework\TestCase
 {
     public function testGettersAndSetters()
     {
@@ -17,7 +17,7 @@ class CompletePurchaseResponseTest extends PHPUnit_Framework_TestCase
         $paymentResult->status = 'SUCCESS';
         $data->paymentResult = $paymentResult;
 
-        $client = Mockery::mock(\Guzzle\Http\ClientInterface::class);
+        $client = Mockery::mock(\Omnipay\Common\Http\ClientInterface::class);
         $request = Mockery::mock(\Symfony\Component\HttpFoundation\Request::class);
 
         $request = new CompletePurchaseRequest($client, $request);

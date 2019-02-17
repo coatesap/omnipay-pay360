@@ -2,11 +2,11 @@
 
 use DigiTickets\Pay360\AbstractPay360Request;
 
-class AbstractPay360RequestTest extends PHPUnit_Framework_TestCase
+class AbstractPay360RequestTest extends \PHPUnit\Framework\TestCase
 {
     public function testGettersAndSetters()
     {
-        $client = Mockery::mock(\Guzzle\Http\ClientInterface::class);
+        $client = Mockery::mock(\Omnipay\Common\Http\ClientInterface::class);
         $request = Mockery::mock(\Symfony\Component\HttpFoundation\Request::class);
         $message = new class($client, $request) extends AbstractPay360Request
         {
@@ -58,7 +58,7 @@ class AbstractPay360RequestTest extends PHPUnit_Framework_TestCase
 
     public function testGenerateDigest()
     {
-        $client = Mockery::mock(\Guzzle\Http\ClientInterface::class);
+        $client = Mockery::mock(\Omnipay\Common\Http\ClientInterface::class);
         $request = Mockery::mock(\Symfony\Component\HttpFoundation\Request::class);
         $message = new class($client, $request) extends AbstractPay360Request
         {

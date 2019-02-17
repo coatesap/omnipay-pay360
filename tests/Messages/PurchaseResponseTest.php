@@ -2,7 +2,7 @@
 
 use DigiTickets\Pay360\Messages\PurchaseResponse;
 
-class PurchaseResponseTest extends PHPUnit_Framework_TestCase
+class PurchaseResponseTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetters()
     {
@@ -40,5 +40,7 @@ class PurchaseResponseTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('error message', $purchaseResponse->getMessage());
         $this->assertFalse($purchaseResponse->isSuccessful());
         $this->assertFalse($purchaseResponse->isRedirect());
+
+        \Mockery::close();
     }
 }

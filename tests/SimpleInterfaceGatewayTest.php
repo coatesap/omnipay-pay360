@@ -21,16 +21,22 @@ class SimpleInterfaceGatewayTest extends GatewayTestCase
 
         $this->gateway = new SimpleInterfaceGateway();
 
-        $this->options = array(
+        $this->options = [
             'amount' => '10.00',
             'returnUrl' => 'https://www.example.com/return',
             'cancelUrl' => 'https://www.example.com/cancel',
-            'items' => [
-                'description' => 'item 1',
-                'price' => 10.00,
-                'quantity' => 1,
-            ],
-        );
+            'items' => new \Omnipay\Common\ItemBag(
+                [
+                    new \Omnipay\Common\Item(
+                        [
+                            'description' => 'item 1',
+                            'price' => 10.00,
+                            'quantity' => 1,
+                        ]
+                    ),
+                ]
+            ),
+        ];
     }
 
     public function testCompletePurchaseSuccess()
@@ -128,5 +134,11 @@ class SimpleInterfaceGatewayTest extends GatewayTestCase
         $this->assertFalse($response->isSuccessful());
         $this->assertFalse($response->isRedirect());
         $this->assertEquals('error message', $response->getMessage());
+    }
+
+    /** @doesNotPerformAssertions */
+    public function testDefaultParametersHaveMatchingMethods()
+    {
+        // No default parameters for this gateway - so skip this inherited test
     }
 }
