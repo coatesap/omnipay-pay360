@@ -1,5 +1,5 @@
 {
-  "name": "digitickets/omnipay-pay360",
+  "name": "coatesap/omnipay-pay360",
   "type": "library",
   "description": "Payment Gateway driver for Pay360",
   "keywords": [
@@ -16,6 +16,11 @@
     {
       "name": "Glenn Jenkins",
       "email": "glenn.jenkins@digitickets.co.uk",
+      "role": "Developer"
+    },
+    {
+      "name": "Andy Coates",
+      "email": "andy@acoates.co.uk",
       "role": "Developer"
     }
   ],
