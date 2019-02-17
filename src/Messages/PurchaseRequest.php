@@ -11,6 +11,7 @@ class PurchaseRequest extends AbstractPay360Request
     {
         return $this->getParameter('returnUrl');
     }
+
     public function setReturnUrl($value)
     {
         return $this->setParameter('returnUrl', $value);
@@ -20,10 +21,12 @@ class PurchaseRequest extends AbstractPay360Request
     {
         return $this->getParameter('cancelUrl');
     }
+
     public function setCancelUrl($value)
     {
         return $this->setParameter('cancelUrl', $value);
     }
+
     public function getBackUrl()
     {
         return $this->getCancelUrl();
@@ -33,6 +36,7 @@ class PurchaseRequest extends AbstractPay360Request
     {
         return $this->getParameter('amount');
     }
+
     public function setAmount($value)
     {
         return $this->setParameter('amount', $value);
@@ -60,7 +64,7 @@ class PurchaseRequest extends AbstractPay360Request
 
     public function getData()
     {
-        $this->validate('returnUrl','cancelUrl','routingSiteId','routingScpId','amount');
+        $this->validate('transactionId', 'returnUrl', 'cancelUrl', 'routingSiteId', 'routingScpId', 'amount', 'items');
 
         $routing = new \scpService_routing();
         $routing->returnUrl = $this->getReturnUrl();
@@ -79,7 +83,7 @@ class PurchaseRequest extends AbstractPay360Request
         foreach ($this->getItems() as $itemBagItem) {
             $itemSummary = new \scpService_summaryData();
             $itemSummary->description = $itemBagItem->getName();
-            $itemSummary->amountInMinorUnits = (int) round(100*$itemBagItem->getPrice()*$itemBagItem->getQuantity());
+            $itemSummary->amountInMinorUnits = (int)round(100 * $itemBagItem->getPrice() * $itemBagItem->getQuantity());
             $itemSummary->reference = $this->getReference();
 
             $lgItemItemDetails = new \scpService_lgItemDetails();
@@ -123,6 +127,7 @@ class PurchaseRequest extends AbstractPay360Request
                 $listener->update('clientException', $t);
             }
             error_log($t->getMessage().' '.$t->getTraceAsString());
+
             return $this->response = new PurchaseResponse($this, $t);
         }
 
@@ -134,6 +139,7 @@ class PurchaseRequest extends AbstractPay360Request
                 $listener->update('purchaseExceptionSend', $scpClient->__getLastRequest());
                 $listener->update('purchaseExceptionRcv', $scpClient->__getLastResponse());
             }
+
             return $this->response = new PurchaseResponse($this, $t);
         }
 
