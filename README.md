@@ -42,6 +42,109 @@ It does not (currently) handle refunds.
 For general Omnipay usage instructions, please see the main [Omnipay](https://github.com/omnipay/omnipay)
 repository.
 
+### Purchase
+
+```php
+use Omnipay\Omnipay;
+
+// Create the gateway object
+$gateway = Omnipay::create('\\DigiTickets\\Pay360\\SimpleInterfaceGateway')->initialize(
+    [
+        'testMode' => true,
+    ]
+);
+
+// Create the collection of items that this purchase is for
+$itemBag = new \Omnipay\Common\ItemBag(
+    [
+        new \Omnipay\Common\Item(
+            [
+                'name' => 'Item A',
+                'description' => 'An item for sale',
+                'price' => '1.00',
+                'quantity' => 1,
+            ]
+        ),
+    ]
+);
+
+// Generate a unique ID for your transaction
+$transactionId = time();
+
+// These are the parameters needed to make a Pay360 purchase
+$config = [
+    'subjectId' => '12345678',
+    'signatureHmacKeyID' => '123',
+    'credentialsIdentifier' => '123456789',
+    'routingScpId' => '12345678',
+    'routingSiteId' => '1',
+    'secretKey' => 'LONG_SECRET_KEY_PROVIDED_BY_THE_GATEWAY==',
+    'reference' => 'AA123456789',
+    'fundCode' => '1',
+    'returnUrl' => 'http://example.com/return.php?transactionId='.$transactionId,
+    'cancelUrl' => 'http://example.com/return.php?transactionId='.$transactionId,
+];
+$purchaseDetails = [
+    'transactionId' => $transactionId,
+    'description' => 'Test transaction '.$transactionId,
+    'amount' => '1.00',
+    'currency' => 'GBP',
+    'items' => $itemBag,
+];
+
+// Send purchase request
+$request = $gateway->purchase(array_merge($config, $purchaseDetails));
+$response = $request->send();
+
+// Pay360 returns a transaction reference at this stage. You'll need to store 
+// this (probably in a database) until the customer returns to your site
+// so that you can verify the outcome of the transaction. 
+$transactionRef = $response->getTransactionReference();
+```
+
+At this stage `$response->isRedirect()` should be `true` and you can call `$response->redirect()` to 
+send the customer off to the hosted card form page.
+
+You will then need a script to handle the returning customer. The following is a simple example:
+
+```php
+use Omnipay\Omnipay;
+
+// Create the gateway object
+$gateway = Omnipay::create('\\DigiTickets\\Pay360\\SimpleInterfaceGateway')->initialize(
+    [
+        'testMode' => true,
+    ]
+);
+
+$transactionId = $_GET['transactionId'];
+
+// Retrieve the transactionRef from your database using $transactionId
+$transactionRef = $valueFromDatabase; 
+
+$config = [
+    'subjectId' => '12345678',
+    'signatureHmacKeyID' => '123',
+    'credentialsIdentifier' => '123456789',
+    'routingScpId' => '12345678',
+    'routingSiteId' => '1',
+    'secretKey' => 'LONG_SECRET_KEY_PROVIDED_BY_THE_GATEWAY==',
+    'reference' => 'AA123456789',
+];
+$purchaseDetails = [
+    'transactionReference' => $transactionRef,
+];
+
+// Send complete purchase request
+$request = $gateway->completePurchase(array_merge($config, $purchaseDetails));
+$response = $request->send();
+```
+
+At this stage, you can then check the result of `$response->isSuccessful()` which should 
+return `true` if the transaction succeeded. 
+
+If the transaction failed, any errors should be provided in `$response->getMessage()`.
+
 ## Support
 
 If you are having general issues with Omnipay, we suggest posting on
