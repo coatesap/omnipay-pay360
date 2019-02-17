@@ -28,7 +28,7 @@ class CompletePurchaseResponse extends AbstractResponse
         if ($this->getData() && $this->getData()->paymentResult && $this->getData()->paymentResult->errorDetails) {
             return $this->getData()->paymentResult->errorDetails->errorId;
         }
-        return 0;
+        return null;
     }
 
     public function getMessage()
