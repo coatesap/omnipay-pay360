@@ -16,8 +16,8 @@ class PurchaseRequestTest extends \PHPUnit\Framework\TestCase
                 'returnUrl' => 'https://www.example.com/return',
                 'cancelUrl' => 'https://www.example.com/cancel',
                 'reference' => 'reference',
-                'routingSiteID'=>'1231331',
-                'routingScpId'=>24978567
+                'routingSiteID' => '1231331',
+                'routingScpId' => 24978567,
             ]
         );
         $ref = "Hello Ma!";
@@ -48,5 +48,70 @@ class PurchaseRequestTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('https://www.example.com/cancel', $request->getData()->routing->backUrl);
         $this->assertInstanceOf(scpService_lgItemDetails::class, $request->getData()->sale->items[0]->lgItemDetails);
         $this->assertEquals(8, $request->getData()->sale->items[0]->lgItemDetails->fundCode);
+
+        // Check that cardholder details are empty
+        $this->assertFalse(isset($request->getData()->billing->cardHolderDetails->cardHolderName));
+        $this->assertFalse(isset($request->getData()->billing->cardHolderDetails->address->address1));
+        $this->assertFalse(isset($request->getData()->billing->cardHolderDetails->address->address3));
+        $this->assertFalse(isset($request->getData()->billing->cardHolderDetails->address->postcode));
+        $this->assertFalse(isset($request->getData()->billing->cardHolderDetails->contact->email));
+    }
+
+    public function testThatCardHolderDetailsArePrefilled()
+    {
+        $client = Mockery::mock(\Omnipay\Common\Http\ClientInterface::class);
+        $request = Mockery::mock(\Symfony\Component\HttpFoundation\Request::class);
+
+        $request = new PurchaseRequest($client, $request);
+        $card = new \Omnipay\Common\CreditCard(
+            [
+                'firstName' => 'Firstname',
+                'lastName' => 'Lastname',
+                'billingAddress1' => 'Address Line 1',
+                'billingCity' => 'City',
+                'billingPostcode' => 'P05 C0D',
+                'email' => 'tester@example.com',
+            ]
+        );
+        $request->initialize(
+            [
+                'amount' => 12.34,
+                'returnUrl' => 'https://www.example.com/return',
+                'cancelUrl' => 'https://www.example.com/cancel',
+                'reference' => 'reference',
+                'routingSiteID' => '1231331',
+                'routingScpId' => 24978567,
+                'card' => $card,
+            ]
+        );
+        $ref = "Transaction with customer details";
+        $request->setTransactionId($ref);
+        $request->setFundCode(8);
+        $request->setItems(
+            [
+                [
+                    'description' => 'item 1',
+                    'price' => 10.00,
+                    'quantity' => 1,
+                ],
+            ]
+        );
+
+        $this->assertInstanceOf(\scpService_scpSimpleInvokeRequest::class, $request->getData());
+        $this->assertContains($card->getFirstName(), $request->getData()->billing->cardHolderDetails->cardHolderName);
+        $this->assertContains($card->getLastName(), $request->getData()->billing->cardHolderDetails->cardHolderName);
+        $this->assertEquals(
+            $card->getBillingAddress1(),
+            $request->getData()->billing->cardHolderDetails->address->address1
+        );
+        $this->assertEquals(
+            $card->getBillingCity(),
+            $request->getData()->billing->cardHolderDetails->address->address3
+        );
+        $this->assertEquals(
+            $card->getBillingPostcode(),
+            $request->getData()->billing->cardHolderDetails->address->postcode
+        );
+        $this->assertEquals($card->getEmail(), $request->getData()->billing->cardHolderDetails->contact->email);
     }
 }
