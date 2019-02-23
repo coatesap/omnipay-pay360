@@ -33,6 +33,7 @@
     }
   },
   "require": {
+    "ext-soap": "*",
     "omnipay/common": "^3",
     "php": "^7",
     "symfony/event-dispatcher": "^2.8"

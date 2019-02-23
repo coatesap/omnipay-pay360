@@ -4,6 +4,7 @@ namespace DigiTickets\Pay360\Messages;
 
 use DigiTickets\Pay360\AbstractPay360Request;
 use DigiTickets\Pay360\Listener;
+use Omnipay\Common\CreditCard;
 
 class PurchaseRequest extends AbstractPay360Request
 {
@@ -102,20 +103,35 @@ class PurchaseRequest extends AbstractPay360Request
         $sale->saleSummary = $saleSummary;
         $sale->items = $items;
 
-        $card = $this->getCard();
+        $card = $this->getCard() ?? new CreditCard();
 
         $address = new \scpService_address();
-        $address->address1 = substr($card->getBillingAddress1(), 0, 50);
-        $address->address2 = substr($card->getBillingAddress2(), 0, 50);
-        $address->address3 = substr($card->getBillingCity(), 0, 50);
-        $address->country = substr($card->getBillingCountry(), 0, 50);
-        $address->postcode = substr($card->getBillingPostcode(), 0, 10);
+        if ($card->getBillingAddress1()) {
+            $address->address1 = substr($card->getBillingAddress1(), 0, 50);
+        }
+        if ($card->getBillingAddress2()) {
+            $address->address2 = substr($card->getBillingAddress2(), 0, 50);
+        }
+        if ($card->getBillingCity()) {
+            $address->address3 = substr($card->getBillingCity(), 0, 50);
+        }
+        if ($card->getBillingCountry()) {
+            $address->country = substr($card->getBillingCountry(), 0, 50);
+        }
+        if ($card->getBillingPostcode()) {
+            $address->postcode = substr($card->getBillingPostcode(), 0, 10);
+        }
 
         $contact = new \scpService_contact();
-        $contact->email = substr($card->getEmail(), 0, 255);
+        if ($card->getEmail()) {
+            $contact->email = substr($card->getEmail(), 0, 255);
+        }
 
         $billingDetails = new \scpService_billingDetails();
-        $billingDetails->cardHolderDetails->cardHolderName = $card->getBillingName();
+        $billingDetails->cardHolderDetails = new \scpService_cardHolderDetails();
+        if ($card->getBillingName()) {
+            $billingDetails->cardHolderDetails->cardHolderName = $card->getBillingName();
+        }
         $billingDetails->cardHolderDetails->address = $address;
         $billingDetails->cardHolderDetails->contact = $contact;
 
@@ -144,7 +160,7 @@ class PurchaseRequest extends AbstractPay360Request
             foreach ($this->getGateway()->getListeners() as $listener) {
                 $listener->update('clientException', $t);
             }
-            error_log($t->getMessage().' '.$t->getTraceAsString());
+            error_log($t->getMessage() . ' ' . $t->getTraceAsString());
 
             return $this->response = new PurchaseResponse($this, $t);
         }
@@ -152,7 +168,7 @@ class PurchaseRequest extends AbstractPay360Request
         try {
             $scpSimpleInvokeResponse = $scpClient->scpSimpleInvoke($data);
         } catch (\Throwable $t) {
-            error_log($t->getMessage().' '.$t->getTraceAsString());
+            error_log($t->getMessage() . ' ' . $t->getTraceAsString());
             foreach ($this->getGateway()->getListeners() as $listener) {
                 $listener->update('purchaseExceptionSend', $scpClient->__getLastRequest());
                 $listener->update('purchaseExceptionRcv', $scpClient->__getLastResponse());
