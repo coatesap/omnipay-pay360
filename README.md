@@ -84,12 +84,26 @@ $config = [
     'returnUrl' => 'http://example.com/return.php?transactionId='.$transactionId,
     'cancelUrl' => 'http://example.com/return.php?transactionId='.$transactionId,
 ];
+
+// Optional - pre-fill cardholder details
+$card = new \Omnipay\Common\CreditCard(
+    [
+        'firstName' => 'Firstname',
+        'lastName' => 'Lastname',
+        'billingAddress1' => 'Address Line 1',
+        'billingCity' => 'City',
+        'billingPostcode' => 'P05 C0D',
+        'email' => 'tester@example.com',
+    ]
+);
+
 $purchaseDetails = [
     'transactionId' => $transactionId,
     'description' => 'Test transaction '.$transactionId,
     'amount' => '1.00',
     'currency' => 'GBP',
     'items' => $itemBag,
+    'card' => $card, // optional
 ];
 
 // Send purchase request
