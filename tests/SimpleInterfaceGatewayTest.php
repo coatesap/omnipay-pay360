@@ -22,6 +22,7 @@ class SimpleInterfaceGatewayTest extends GatewayTestCase
         $this->gateway = new SimpleInterfaceGateway();
 
         $this->options = [
+            'transactionId' => 123,
             'amount' => '10.00',
             'returnUrl' => 'https://www.example.com/return',
             'cancelUrl' => 'https://www.example.com/cancel',
