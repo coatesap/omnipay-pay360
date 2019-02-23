@@ -40,6 +40,7 @@ class PurchaseResponse extends AbstractResponse implements RedirectResponseInter
 
     /**
      * PurchaseResponse constructor.
+     *
      * @param PurchaseRequest $purchaseRequest
      * @param \scpService_scpInvokeResponse|\Throwable $scpResponse
      */
@@ -48,7 +49,10 @@ class PurchaseResponse extends AbstractResponse implements RedirectResponseInter
         $scpResponse = null
     ) {
         parent::__construct($purchaseRequest, $scpResponse);
-        if (!($scpResponse instanceof \Throwable)) {
+        if ($scpResponse instanceof \SoapFault) {
+            $this->setCode($scpResponse->faultcode);
+            $this->setMessage($scpResponse->faultstring);
+        } elseif (!($scpResponse instanceof \Throwable)) {
             if (isset($scpResponse->invokeResult)) {
                 $this->setCode($scpResponse->invokeResult->status);
                 if ($scpResponse->invokeResult->status == 'SUCCESS') {
@@ -59,7 +63,9 @@ class PurchaseResponse extends AbstractResponse implements RedirectResponseInter
                 }
             }
         }
-        $this->transactionRef = $scpResponse->scpReference;
+        if (isset($scpResponse->scpReference)) {
+            $this->transactionRef = $scpResponse->scpReference;
+        }
     }
 
     public function isSuccessful()
