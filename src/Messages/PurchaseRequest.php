@@ -102,6 +102,23 @@ class PurchaseRequest extends AbstractPay360Request
         $sale->saleSummary = $saleSummary;
         $sale->items = $items;
 
+        $card = $this->getCard();
+
+        $address = new \scpService_address();
+        $address->address1 = substr($card->getBillingAddress1(), 0, 50);
+        $address->address2 = substr($card->getBillingAddress2(), 0, 50);
+        $address->address3 = substr($card->getBillingCity(), 0, 50);
+        $address->country = substr($card->getBillingCountry(), 0, 50);
+        $address->postcode = substr($card->getBillingPostcode(), 0, 10);
+
+        $contact = new \scpService_contact();
+        $contact->email = substr($card->getEmail(), 0, 255);
+
+        $billingDetails = new \scpService_billingDetails();
+        $billingDetails->cardHolderDetails->cardHolderName = $card->getBillingName();
+        $billingDetails->cardHolderDetails->address = $address;
+        $billingDetails->cardHolderDetails->contact = $contact;
+
         $scpSimpleInvokeRequest = new \scpService_scpSimpleInvokeRequest();
         $scpSimpleInvokeRequest->credentials = $this->getCredentials();
         $scpSimpleInvokeRequest->requestType = 'payOnly';
@@ -109,6 +126,7 @@ class PurchaseRequest extends AbstractPay360Request
         $scpSimpleInvokeRequest->routing = $routing;
         $scpSimpleInvokeRequest->panEntryMethod = 'ECOM';
         $scpSimpleInvokeRequest->sale = $sale;
+        $scpSimpleInvokeRequest->billing = $billingDetails;
 
         return $scpSimpleInvokeRequest;
     }
